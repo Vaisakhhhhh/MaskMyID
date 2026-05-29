@@ -44,21 +44,24 @@ export function drawMask(
             pixelateRegion(ctx, mask.x, mask.y, mask.width, mask.height);
             break;
 
-        case 'blur':
+        case 'blur': {
+            const w = Math.max(1, Math.floor(mask.width));
+            const h = Math.max(1, Math.floor(mask.height));
             const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = mask.width;
-            tempCanvas.height = mask.height;
+            tempCanvas.width = w;
+            tempCanvas.height = h;
             const tempCtx = tempCanvas.getContext('2d');
             if (tempCtx) {
                 tempCtx.filter = 'blur(10px)';
                 tempCtx.drawImage(
                     ctx.canvas, 
                     mask.x, mask.y, mask.width, mask.height, 
-                    0, 0, mask.width, mask.height
+                    0, 0, w, h
                 );
-                ctx.drawImage(tempCanvas, mask.x, mask.y);
+                ctx.drawImage(tempCanvas, mask.x, mask.y, mask.width, mask.height);
             }
             break;
+        }
     }
 
     ctx.restore(); // Restore clipping path
