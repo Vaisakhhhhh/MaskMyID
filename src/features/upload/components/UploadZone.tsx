@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { UploadCloud, Image as ImageIcon } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import type { UploadedImage } from '../types/upload.types';
 
@@ -63,25 +64,27 @@ export function UploadZone({
         >
             <input {...getInputProps()} />
 
-            <div className="space-y-4 text-center">
-                <div className="text-5xl">📄</div>
+            <div className="space-y-4 flex flex-col items-center text-center p-8">
+                <div className="w-16 h-16 rounded-2xl bg-zinc-800/50 flex items-center justify-center text-blue-400 mb-2 border border-zinc-700/50 shadow-inner">
+                    <UploadCloud className="w-8 h-8" />
+                </div>
 
                 <div>
-                    <h2 className="text-2xl font-semibold text-white">
+                    <h2 className="text-xl font-bold text-white mb-1">
                         Upload your document
                     </h2>
 
-                    <p className="mt-2 text-zinc-400">
-                        Drag & drop your Aadhaar or PAN card image here
+                    <p className="text-sm text-zinc-400 max-w-xs mx-auto leading-relaxed">
+                        Drag & drop your ID card, passport, or document image here
                     </p>
                 </div>
 
-                <div className="rounded-xl bg-white px-5 py-3 text-sm font-medium text-black">
-                    Choose Image
+                <div className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-500 transition px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20">
+                    <ImageIcon className="w-4 h-4" /> Choose Image
                 </div>
 
-                <p className="text-xs text-zinc-500">
-                    PNG, JPG, JPEG, WEBP
+                <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                    PNG, JPG, JPEG, WEBP up to 5MB
                 </p>
             </div>
         </div>

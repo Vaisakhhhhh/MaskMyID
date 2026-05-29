@@ -5,15 +5,18 @@ import { useCanvasHistory } from '../hooks/useCanvasHistory';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import { useAutoDetect } from '../hooks/useAutoDetect';
 import { EditorToolbar } from './EditorToolbar';
+import { Trash2, Download, ShieldCheck } from 'lucide-react';
 
 interface ImageCanvasProps {
     imageUrl: string;
     onRemoveImage: () => void;
+    onGoHome: () => void;
 }
 
 export function ImageCanvas({
     imageUrl,
     onRemoveImage,
+    onGoHome,
 }: ImageCanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -188,53 +191,80 @@ export function ImageCanvas({
     };
 
     return (
-        <>
-            <EditorToolbar
-                selectedMaskType={selectedMaskType}
-                setSelectedMaskType={(type) => {
-                    setSelectedMaskType(type);
-                    if (selectedMaskId) {
-                        const newMasks = masks.map(m => m.id === selectedMaskId ? { ...m, type } : m);
-                        pushHistory(newMasks);
-                    }
-                }}
-                selectedMaskShape={selectedMaskShape}
-                setSelectedMaskShape={(shape) => {
-                    setSelectedMaskShape(shape);
-                    if (selectedMaskId) {
-                        const newMasks = masks.map(m => m.id === selectedMaskId ? { ...m, shape } : m);
-                        pushHistory(newMasks);
-                    }
-                }}
-                canUndo={canUndo}
-                canRedo={canRedo}
-                handleUndo={handleUndo}
-                handleRedo={handleRedo}
-                hasSelection={!!selectedMaskId}
-                handleDelete={() => {
-                    handleDelete(selectedMaskId);
-                    setSelectedMaskId(null);
-                }}
-                handleClearAll={handleClearAll}
-                handleExport={handleExport}
-                onRemoveImage={onRemoveImage}
-            />
-            
-            <canvas
-                ref={canvasRef}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseLeave}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-                className={`max-w-full rounded-2xl border border-zinc-800 touch-none ${
-                    interactionMode === 'moving' ? 'cursor-move' : 
-                    interactionMode === 'resizing' ? 'cursor-nwse-resize' : 
-                    selectedMaskId ? 'cursor-default' : 'cursor-crosshair'
-                }`}
-            />
-        </>
+        <div className="flex flex-col h-full w-full">
+            <header className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-md">
+                <div className="flex flex-col cursor-pointer hover:opacity-80 transition" onClick={onGoHome}>
+                    <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5 text-blue-500" /> MaskMyID <span className="text-xs font-normal bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20">v1.0</span>
+                    </h1>
+                    <p className="text-xs text-zinc-400 hidden sm:block">Privacy-first document masking. Your files never leave your device.</p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <button onClick={onRemoveImage}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800">
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                        Remove Image
+                    </button>
+                    <button onClick={handleExport}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white transition bg-blue-600 rounded-lg hover:bg-blue-500 shadow-md shadow-blue-600/10">
+                        <Download className="w-4 h-4" />
+                        Export Image
+                    </button>
+                </div>
+            </header>
+
+            <main className="flex flex-1 flex-col lg:flex-row overflow-hidden">
+                <EditorToolbar
+                    selectedMaskType={selectedMaskType}
+                    setSelectedMaskType={(type) => {
+                        setSelectedMaskType(type);
+                        if (selectedMaskId) {
+                            const newMasks = masks.map(m => m.id === selectedMaskId ? { ...m, type } : m);
+                            pushHistory(newMasks);
+                        }
+                    }}
+                    selectedMaskShape={selectedMaskShape}
+                    setSelectedMaskShape={(shape) => {
+                        setSelectedMaskShape(shape);
+                        if (selectedMaskId) {
+                            const newMasks = masks.map(m => m.id === selectedMaskId ? { ...m, shape } : m);
+                            pushHistory(newMasks);
+                        }
+                    }}
+                    canUndo={canUndo}
+                    canRedo={canRedo}
+                    handleUndo={handleUndo}
+                    handleRedo={handleRedo}
+                    hasSelection={!!selectedMaskId}
+                    handleDelete={() => {
+                        handleDelete(selectedMaskId);
+                        setSelectedMaskId(null);
+                    }}
+                    handleClearAll={handleClearAll}
+                />
+                
+                <section className="flex-1 bg-zinc-950 p-6 flex items-center justify-center overflow-auto relative">
+                    <div className="relative max-h-full max-w-4xl rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/20 shadow-2xl p-2 group">
+                        <canvas
+                            ref={canvasRef}
+                            onMouseDown={handleMouseDown}
+                            onMouseMove={handleMouseMove}
+                            onMouseUp={handleMouseUp}
+                            onMouseLeave={handleMouseLeave}
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                            className={`max-h-[70vh] max-w-full rounded-xl object-contain shadow-lg block touch-none ${
+                                interactionMode === 'moving' ? 'cursor-move' : 
+                                interactionMode === 'resizing' ? 'cursor-nwse-resize' : 
+                                selectedMaskId ? 'cursor-default' : 'cursor-crosshair'
+                            }`}
+                        />
+                        <div className="absolute inset-2 pointer-events-none rounded-xl border border-white/5 mix-blend-overlay"></div>
+                    </div>
+                </section>
+            </main>
+        </div>
     );
 }
