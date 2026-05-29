@@ -1,47 +1,140 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { MaskRect } from '../types/mask.types';
 
 interface ImageCanvasProps {
-  imageUrl: string;
+    imageUrl: string;
 }
 
 export function ImageCanvas({
-  imageUrl,
+    imageUrl,
 }: ImageCanvasProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [masks, setMasks] = useState<MaskRect[]>([]);
+    const [isDrawing, setIsDrawing] = useState(false);
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
+    const startPointRef = useRef({
+        x: 0,
+        y: 0,
+    });
 
-    if (!canvas) return;
+    const getCanvasCoordinates = (
+        event: React.MouseEvent<HTMLCanvasElement>,
+    ) => {
+        const canvas = canvasRef.current;
 
-    const ctx = canvas.getContext('2d');
+        if (!canvas) {
+            return { x: 0, y: 0 };
+        }
 
-    if (!ctx) return;
+        const rect = canvas.getBoundingClientRect();
 
-    const image = new Image();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
 
-    image.onload = () => {
-      canvas.width = image.width;
-      canvas.height = image.height;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      ctx.drawImage(
-        image,
-        0,
-        0,
-        image.width,
-        image.height,
-      );
+        return {
+            x: (event.clientX - rect.left) * scaleX,
+            y: (event.clientY - rect.top) * scaleY,
+        };
     };
 
-    image.src = imageUrl;
-  }, [imageUrl]);
+    const handleMouseDown = (
+        event: React.MouseEvent<HTMLCanvasElement>,
+    ) => {
+        const point = getCanvasCoordinates(event);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="max-w-full rounded-2xl border border-zinc-800"
-    />
-  );
+        startPointRef.current = point;
+
+        setIsDrawing(true);
+    };
+
+    const handleMouseUp = (
+        event: React.MouseEvent<HTMLCanvasElement>,
+    ) => {
+        if (!isDrawing) return;
+
+        const endPoint = getCanvasCoordinates(event);
+
+        const start = startPointRef.current;
+
+        const newMask: MaskRect = {
+            id: crypto.randomUUID(),
+            x: Math.min(start.x, endPoint.x),
+            y: Math.min(start.y, endPoint.y),
+            width: Math.abs(endPoint.x - start.x),
+            height: Math.abs(endPoint.y - start.y),
+        };
+
+        setMasks((prev) => [...prev, newMask]);
+
+        setIsDrawing(false);
+    };
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) return;
+
+        const image = new Image();
+
+        image.onload = () => {
+            canvas.width = image.width;
+            canvas.height = image.height;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.drawImage(
+                image,
+                0,
+                0,
+                image.width,
+                image.height,
+            );
+
+            masks.forEach((mask) => {
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 2;
+
+                ctx.fillStyle = 'rgba(59,130,246,0.15)';
+
+                ctx.fillRect(
+                    mask.x,
+                    mask.y,
+                    mask.width,
+                    mask.height,
+                );
+
+                ctx.strokeRect(
+                    mask.x,
+                    mask.y,
+                    mask.width,
+                    mask.height,
+                );
+            });
+        };
+
+        image.src = imageUrl;
+    }, [imageUrl, masks]);
+
+    return (
+        <>
+            <div className="mb-4 flex gap-2">
+                <button
+                    onClick={() => setMasks([])}
+                    className="rounded-lg bg-zinc-800 px-4 py-2"
+                >
+                    Clear All
+                </button>
+            </div>
+            <canvas
+                ref={canvasRef}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+                className="max-w-full rounded-2xl border border-zinc-800 cursor-crosshair"
+            />
+        </>
+    );
 }
