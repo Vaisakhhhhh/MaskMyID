@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import type { MaskRect, MaskType } from '../types/mask.types';
-import { drawImage, drawAllMasks, drawMask } from '../utils/drawCanvas';
+import type { MaskRect, MaskType, ResizeHandle } from '../types/mask.types';
+import { drawImage, drawAllMasks, drawMask, HANDLE_SIZE } from '../utils/drawCanvas';
 
 interface ImageCanvasProps {
     imageUrl: string;
@@ -18,7 +18,9 @@ export function ImageCanvas({
     const [historyIndex, setHistoryIndex] = useState(0);
     const masks = history[historyIndex];
 
-    const [isDrawing, setIsDrawing] = useState(false);
+    const [interactionMode, setInteractionMode] = useState<'idle' | 'drawing' | 'moving' | 'resizing'>('idle');
+    const [selectedMaskId, setSelectedMaskId] = useState<string | null>(null);
+    const [resizeHandle, setResizeHandle] = useState<ResizeHandle | null>(null);
     const [selectedMaskType, setSelectedMaskType] = useState<MaskType>('black');
     
     const startPointRef = useRef({ x: 0, y: 0 });
@@ -38,6 +40,39 @@ export function ImageCanvas({
         };
     };
 
+    const getHitResult = (x: number, y: number, masksList: MaskRect[]) => {
+        if (selectedMaskId) {
+            const selected = masksList.find(m => m.id === selectedMaskId);
+            if (selected) {
+                const HANDLE_HALF = HANDLE_SIZE / 2;
+                const handles: { type: ResizeHandle; hx: number; hy: number }[] = [
+                    { type: 'nw', hx: selected.x, hy: selected.y },
+                    { type: 'ne', hx: selected.x + selected.width, hy: selected.y },
+                    { type: 'sw', hx: selected.x, hy: selected.y + selected.height },
+                    { type: 'se', hx: selected.x + selected.width, hy: selected.y + selected.height },
+                ];
+                
+                for (const h of handles) {
+                    if (
+                        x >= h.hx - HANDLE_HALF && x <= h.hx + HANDLE_HALF &&
+                        y >= h.hy - HANDLE_HALF && y <= h.hy + HANDLE_HALF
+                    ) {
+                        return { type: 'handle', handle: h.type, mask: selected };
+                    }
+                }
+            }
+        }
+        
+        for (let i = masksList.length - 1; i >= 0; i--) {
+            const m = masksList[i];
+            if (x >= m.x && x <= m.x + m.width && y >= m.y && y <= m.y + m.height) {
+                return { type: 'mask', mask: m };
+            }
+        }
+        
+        return { type: 'empty' };
+    };
+
     const redrawCanvas = useCallback((showBorders: boolean = true) => {
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext('2d');
@@ -46,22 +81,54 @@ export function ImageCanvas({
         if (!canvas || !ctx || !image) return;
 
         drawImage(ctx, image, canvas);
-        drawAllMasks(ctx, masks, showBorders);
         
-        if (isDrawing && showBorders) {
+        const activeMasks = masks.filter(m => !(interactionMode !== 'idle' && interactionMode !== 'drawing' && m.id === selectedMaskId));
+        drawAllMasks(ctx, activeMasks, showBorders, selectedMaskId);
+        
+        if (interactionMode !== 'idle' && showBorders) {
             const start = startPointRef.current;
             const end = currentPointRef.current;
-            const previewMask: MaskRect = {
-                id: 'preview',
-                x: Math.min(start.x, end.x),
-                y: Math.min(start.y, end.y),
-                width: Math.abs(end.x - start.x),
-                height: Math.abs(end.y - start.y),
-                type: selectedMaskType,
-            };
-            drawMask(ctx, previewMask, true);
+            
+            if (interactionMode === 'drawing') {
+                const previewMask: MaskRect = {
+                    id: 'preview',
+                    x: Math.min(start.x, end.x),
+                    y: Math.min(start.y, end.y),
+                    width: Math.abs(end.x - start.x),
+                    height: Math.abs(end.y - start.y),
+                    type: selectedMaskType,
+                };
+                drawMask(ctx, previewMask, true, true);
+            } else if (selectedMaskId) {
+                const selected = masks.find(m => m.id === selectedMaskId);
+                if (selected) {
+                    const dx = end.x - start.x;
+                    const dy = end.y - start.y;
+                    let preview = { ...selected };
+                    
+                    if (interactionMode === 'moving') {
+                        preview.x += dx;
+                        preview.y += dy;
+                    } else if (interactionMode === 'resizing' && resizeHandle) {
+                        if (resizeHandle.includes('n')) { preview.y += dy; preview.height -= dy; }
+                        if (resizeHandle.includes('s')) { preview.height += dy; }
+                        if (resizeHandle.includes('w')) { preview.x += dx; preview.width -= dx; }
+                        if (resizeHandle.includes('e')) { preview.width += dx; }
+                        
+                        if (preview.width < 5) {
+                            if (resizeHandle.includes('w')) preview.x += (preview.width - 5);
+                            preview.width = 5;
+                        }
+                        if (preview.height < 5) {
+                            if (resizeHandle.includes('n')) preview.y += (preview.height - 5);
+                            preview.height = 5;
+                        }
+                    }
+                    drawMask(ctx, preview, true, true);
+                }
+            }
         }
-    }, [masks, isDrawing, selectedMaskType]);
+    }, [masks, interactionMode, selectedMaskId, selectedMaskType, resizeHandle]);
 
     useEffect(() => {
         const image = new Image();
@@ -78,15 +145,28 @@ export function ImageCanvas({
 
     useEffect(() => {
         redrawCanvas();
-    }, [masks, isDrawing, selectedMaskType, redrawCanvas]);
+    }, [masks, interactionMode, selectedMaskId, selectedMaskType, resizeHandle, redrawCanvas]);
 
     const handleUndo = useCallback(() => {
         setHistoryIndex((prev) => Math.max(0, prev - 1));
+        setSelectedMaskId(null);
     }, []);
 
     const handleRedo = useCallback(() => {
         setHistoryIndex((prev) => Math.min(history.length - 1, prev + 1));
+        setSelectedMaskId(null);
     }, [history.length]);
+
+    const handleDelete = useCallback(() => {
+        if (selectedMaskId) {
+            const newMasks = masks.filter(m => m.id !== selectedMaskId);
+            const newHistory = history.slice(0, historyIndex + 1);
+            newHistory.push(newMasks);
+            setHistory(newHistory);
+            setHistoryIndex(newHistory.length - 1);
+            setSelectedMaskId(null);
+        }
+    }, [masks, selectedMaskId, history, historyIndex]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -102,49 +182,111 @@ export function ImageCanvas({
                     e.preventDefault();
                     handleRedo();
                 }
+            } else if (e.key === 'Backspace' || e.key === 'Delete') {
+                handleDelete();
+            } else if (e.key === 'Escape') {
+                setSelectedMaskId(null);
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handleUndo, handleRedo]);
+    }, [handleUndo, handleRedo, handleDelete]);
 
     const handleStart = (clientX: number, clientY: number) => {
         const point = getCanvasCoordinates(clientX, clientY);
         startPointRef.current = point;
         currentPointRef.current = point;
-        setIsDrawing(true);
+        
+        const hit = getHitResult(point.x, point.y, masks);
+        
+        if (hit.type === 'handle' && 'handle' in hit) {
+            setInteractionMode('resizing');
+            setResizeHandle(hit.handle as ResizeHandle);
+        } else if (hit.type === 'mask' && 'mask' in hit) {
+            setSelectedMaskId((hit.mask as MaskRect).id);
+            setInteractionMode('moving');
+        } else {
+            setSelectedMaskId(null);
+            setInteractionMode('drawing');
+        }
     };
 
     const handleMove = (clientX: number, clientY: number) => {
-        if (!isDrawing) return;
+        if (interactionMode === 'idle') return;
         currentPointRef.current = getCanvasCoordinates(clientX, clientY);
         redrawCanvas();
     };
 
     const handleEnd = () => {
-        if (!isDrawing) return;
+        if (interactionMode === 'idle') return;
         
         const start = startPointRef.current;
         const end = currentPointRef.current;
         
-        const newMask: MaskRect = {
-            id: crypto.randomUUID(),
-            x: Math.min(start.x, end.x),
-            y: Math.min(start.y, end.y),
-            width: Math.abs(end.x - start.x),
-            height: Math.abs(end.y - start.y),
-            type: selectedMaskType,
-        };
+        let newMasks = [...masks];
+        let stateChanged = false;
         
-        if (newMask.width > 5 && newMask.height > 5) {
+        if (interactionMode === 'drawing') {
+            const newMask: MaskRect = {
+                id: crypto.randomUUID(),
+                x: Math.min(start.x, end.x),
+                y: Math.min(start.y, end.y),
+                width: Math.abs(end.x - start.x),
+                height: Math.abs(end.y - start.y),
+                type: selectedMaskType,
+            };
+            
+            if (newMask.width > 5 && newMask.height > 5) {
+                newMasks.push(newMask);
+                setSelectedMaskId(newMask.id);
+                stateChanged = true;
+            }
+        } else if (selectedMaskId) {
+            const selectedIdx = newMasks.findIndex(m => m.id === selectedMaskId);
+            if (selectedIdx !== -1) {
+                const selected = newMasks[selectedIdx];
+                const dx = end.x - start.x;
+                const dy = end.y - start.y;
+                let preview = { ...selected };
+                
+                if (interactionMode === 'moving') {
+                    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                        preview.x += dx;
+                        preview.y += dy;
+                        stateChanged = true;
+                    }
+                } else if (interactionMode === 'resizing' && resizeHandle) {
+                    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                        if (resizeHandle.includes('n')) { preview.y += dy; preview.height -= dy; }
+                        if (resizeHandle.includes('s')) { preview.height += dy; }
+                        if (resizeHandle.includes('w')) { preview.x += dx; preview.width -= dx; }
+                        if (resizeHandle.includes('e')) { preview.width += dx; }
+                        
+                        if (preview.width < 5) {
+                            if (resizeHandle.includes('w')) preview.x += (preview.width - 5);
+                            preview.width = 5;
+                        }
+                        if (preview.height < 5) {
+                            if (resizeHandle.includes('n')) preview.y += (preview.height - 5);
+                            preview.height = 5;
+                        }
+                        stateChanged = true;
+                    }
+                }
+                newMasks[selectedIdx] = preview;
+            }
+        }
+        
+        if (stateChanged) {
             const newHistory = history.slice(0, historyIndex + 1);
-            newHistory.push([...masks, newMask]);
+            newHistory.push(newMasks);
             setHistory(newHistory);
             setHistoryIndex(newHistory.length - 1);
         }
         
-        setIsDrawing(false);
+        setInteractionMode('idle');
+        setResizeHandle(null);
     };
 
     const handleClearAll = () => {
@@ -152,12 +294,13 @@ export function ImageCanvas({
         newHistory.push([]);
         setHistory(newHistory);
         setHistoryIndex(newHistory.length - 1);
+        setSelectedMaskId(null);
     };
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => handleStart(e.clientX, e.clientY);
     const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => handleMove(e.clientX, e.clientY);
     const handleMouseUp = () => handleEnd();
-    const handleMouseLeave = () => { if (isDrawing) handleEnd(); };
+    const handleMouseLeave = () => { if (interactionMode !== 'idle') handleEnd(); };
 
     const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
         e.preventDefault();
@@ -180,7 +323,6 @@ export function ImageCanvas({
         const canvas = canvasRef.current;
         if (!canvas) return;
         
-        // Redraw without borders for export
         redrawCanvas(false);
         
         const link = document.createElement('a');
@@ -188,7 +330,6 @@ export function ImageCanvas({
         link.href = canvas.toDataURL('image/png');
         link.click();
         
-        // Restore borders
         redrawCanvas(true);
     };
 
@@ -230,6 +371,13 @@ export function ImageCanvas({
                 </button>
                 <div className="mx-2 w-px bg-zinc-800"></div>
                 <button
+                    onClick={handleDelete}
+                    disabled={!selectedMaskId}
+                    className={`rounded-lg px-4 py-2 ${!selectedMaskId ? 'bg-zinc-800/50 text-zinc-500' : 'bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white'}`}
+                >
+                    Delete Selected
+                </button>
+                <button
                     onClick={handleClearAll}
                     className="rounded-lg bg-zinc-800 px-4 py-2"
                 >
@@ -257,7 +405,11 @@ export function ImageCanvas({
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
-                className="max-w-full rounded-2xl border border-zinc-800 cursor-crosshair touch-none"
+                className={`max-w-full rounded-2xl border border-zinc-800 touch-none ${
+                    interactionMode === 'moving' ? 'cursor-move' : 
+                    interactionMode === 'resizing' ? 'cursor-nwse-resize' : 
+                    selectedMaskId ? 'cursor-default' : 'cursor-crosshair'
+                }`}
             />
         </>
     );
