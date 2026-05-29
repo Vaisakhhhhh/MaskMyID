@@ -38,13 +38,14 @@ function App() {
 
         {image ? (
           <section className="mx-auto max-w-6xl">
-            <ImageCanvas imageUrl={image.preview} />
+            <ImageCanvas 
+                imageUrl={image.preview} 
+                onRemoveImage={handleRemoveImage}
+            />
           </section>
         ) : (
           <UploadZone
-            image={image}
             onImageUpload={setImage}
-            onRemoveImage={handleRemoveImage}
           />
         )}
 

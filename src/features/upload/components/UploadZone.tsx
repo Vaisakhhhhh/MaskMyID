@@ -3,15 +3,11 @@ import { useDropzone } from 'react-dropzone';
 import type { UploadedImage } from '../types/upload.types';
 
 interface UploadZoneProps {
-    image: UploadedImage | null;
     onImageUpload: (image: UploadedImage) => void;
-    onRemoveImage: () => void;
 }
 
 export function UploadZone({
-    image,
     onImageUpload,
-    onRemoveImage,
 }: UploadZoneProps) {
     const onDrop = useCallback(
         (acceptedFiles: File[]) => {
@@ -50,26 +46,6 @@ export function UploadZone({
         multiple: false,
     });
 
-    if (image) {
-        return (
-            <div className="w-full max-w-2xl mx-auto">
-                <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900">
-                    <img
-                        src={image.preview}
-                        alt="Uploaded document preview"
-                        className="w-full object-cover"
-                    />
-                </div>
-
-                <button
-                    onClick={onRemoveImage}
-                    className="mt-4 w-full rounded-xl bg-red-500 px-4 py-3 font-medium text-white transition hover:bg-red-600"
-                >
-                    Remove Image
-                </button>
-            </div>
-        );
-    }
 
     return (
         <div

@@ -5,36 +5,22 @@ export function pixelateRegion(
   width: number,
   height: number,
 ) {
+  if (width <= 0 || height <= 0) return;
+
   const pixelSize = 12;
+  const w = Math.max(1, Math.floor(width / pixelSize));
+  const h = Math.max(1, Math.floor(height / pixelSize));
 
-  for (
-    let py = y;
-    py < y + height;
-    py += pixelSize
-  ) {
-    for (
-      let px = x;
-      px < x + width;
-      px += pixelSize
-    ) {
-      const imageData = ctx.getImageData(
-        px,
-        py,
-        1,
-        1,
-      );
+  const offscreen = document.createElement('canvas');
+  offscreen.width = w;
+  offscreen.height = h;
+  const offCtx = offscreen.getContext('2d');
+  
+  if (!offCtx) return;
 
-      const [r, g, b] = imageData.data;
+  offCtx.drawImage(ctx.canvas, x, y, width, height, 0, 0, w, h);
 
-      ctx.fillStyle =
-        `rgb(${r},${g},${b})`;
-
-      ctx.fillRect(
-        px,
-        py,
-        pixelSize,
-        pixelSize,
-      );
-    }
-  }
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(offscreen, 0, 0, w, h, x, y, width, height);
+  ctx.imageSmoothingEnabled = true;
 }

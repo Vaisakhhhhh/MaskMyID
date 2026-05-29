@@ -1,151 +1,153 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import type { MaskRect, MaskType } from '../types/mask.types';
-import { pixelateRegion } from '../utils/pixelate';
+import { drawImage, drawAllMasks, drawMask } from '../utils/drawCanvas';
 
 interface ImageCanvasProps {
     imageUrl: string;
+    onRemoveImage: () => void;
 }
 
 export function ImageCanvas({
     imageUrl,
+    onRemoveImage,
 }: ImageCanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const imageRef = useRef<HTMLImageElement | null>(null);
+    
     const [masks, setMasks] = useState<MaskRect[]>([]);
     const [isDrawing, setIsDrawing] = useState(false);
     const [selectedMaskType, setSelectedMaskType] = useState<MaskType>('black');
-
-    const startPointRef = useRef({
-        x: 0,
-        y: 0,
-    });
+    
+    const startPointRef = useRef({ x: 0, y: 0 });
+    const currentPointRef = useRef({ x: 0, y: 0 });
 
     const getCanvasCoordinates = (
-        event: React.MouseEvent<HTMLCanvasElement>,
+        clientX: number, clientY: number
     ) => {
         const canvas = canvasRef.current;
-
-        if (!canvas) {
-            return { x: 0, y: 0 };
-        }
-
+        if (!canvas) return { x: 0, y: 0 };
         const rect = canvas.getBoundingClientRect();
-
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
-
         return {
-            x: (event.clientX - rect.left) * scaleX,
-            y: (event.clientY - rect.top) * scaleY,
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY,
         };
     };
 
-    const handleMouseDown = (
-        event: React.MouseEvent<HTMLCanvasElement>,
-    ) => {
-        const point = getCanvasCoordinates(event);
+    const redrawCanvas = useCallback((showBorders: boolean = true) => {
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext('2d');
+        const image = imageRef.current;
+        
+        if (!canvas || !ctx || !image) return;
 
+        drawImage(ctx, image, canvas);
+        drawAllMasks(ctx, masks, showBorders);
+        
+        if (isDrawing && showBorders) {
+            const start = startPointRef.current;
+            const end = currentPointRef.current;
+            const previewMask: MaskRect = {
+                id: 'preview',
+                x: Math.min(start.x, end.x),
+                y: Math.min(start.y, end.y),
+                width: Math.abs(end.x - start.x),
+                height: Math.abs(end.y - start.y),
+                type: selectedMaskType,
+            };
+            drawMask(ctx, previewMask, true);
+        }
+    }, [masks, isDrawing, selectedMaskType]);
+
+    useEffect(() => {
+        const image = new Image();
+        image.onload = () => {
+            imageRef.current = image;
+            if (canvasRef.current) {
+                canvasRef.current.width = image.width;
+                canvasRef.current.height = image.height;
+                redrawCanvas();
+            }
+        };
+        image.src = imageUrl;
+    }, [imageUrl, redrawCanvas]);
+
+    useEffect(() => {
+        redrawCanvas();
+    }, [masks, isDrawing, selectedMaskType, redrawCanvas]);
+
+    const handleStart = (clientX: number, clientY: number) => {
+        const point = getCanvasCoordinates(clientX, clientY);
         startPointRef.current = point;
-
+        currentPointRef.current = point;
         setIsDrawing(true);
     };
 
-    const handleMouseUp = (
-        event: React.MouseEvent<HTMLCanvasElement>,
-    ) => {
+    const handleMove = (clientX: number, clientY: number) => {
         if (!isDrawing) return;
+        currentPointRef.current = getCanvasCoordinates(clientX, clientY);
+        redrawCanvas();
+    };
 
-        const endPoint = getCanvasCoordinates(event);
-
+    const handleEnd = () => {
+        if (!isDrawing) return;
+        
         const start = startPointRef.current;
-
+        const end = currentPointRef.current;
+        
         const newMask: MaskRect = {
             id: crypto.randomUUID(),
-            x: Math.min(start.x, endPoint.x),
-            y: Math.min(start.y, endPoint.y),
-            width: Math.abs(endPoint.x - start.x),
-            height: Math.abs(endPoint.y - start.y),
+            x: Math.min(start.x, end.x),
+            y: Math.min(start.y, end.y),
+            width: Math.abs(end.x - start.x),
+            height: Math.abs(end.y - start.y),
             type: selectedMaskType,
         };
-
-        setMasks((prev) => [...prev, newMask]);
-
+        
+        if (newMask.width > 5 && newMask.height > 5) {
+            setMasks(prev => [...prev, newMask]);
+        }
+        
         setIsDrawing(false);
     };
 
-    useEffect(() => {
-        const canvas = canvasRef.current;
+    const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => handleStart(e.clientX, e.clientY);
+    const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => handleMove(e.clientX, e.clientY);
+    const handleMouseUp = () => handleEnd();
+    const handleMouseLeave = () => { if (isDrawing) handleEnd(); };
 
-        if (!canvas) return;
-
-        const ctx = canvas.getContext('2d');
-
-        if (!ctx) return;
-
-        const image = new Image();
-
-        image.onload = () => {
-            canvas.width = image.width;
-            canvas.height = image.height;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            ctx.drawImage(
-                image,
-                0,
-                0,
-                image.width,
-                image.height,
-            );
-
-            masks.forEach((mask) => {
-                ctx.strokeStyle = '#3b82f6';
-                ctx.lineWidth = 2;
-
-                switch (mask.type) {
-                    case 'black':
-                        ctx.fillStyle = '#000';
-                        ctx.fillRect(mask.x, mask.y, mask.width, mask.height);
-                        break;
-
-                    case 'pixelate':
-                        pixelateRegion(
-                            ctx,
-                            mask.x,
-                            mask.y,
-                            mask.width,
-                            mask.height,
-                        );
-                        break;
-
-                    case 'blur':
-                        // implement later
-                        break;
-                }
-
-                ctx.strokeRect(
-                    mask.x,
-                    mask.y,
-                    mask.width,
-                    mask.height,
-                );
-            });
-        };
-
-        image.src = imageUrl;
-    }, [imageUrl, masks]);
+    const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        handleStart(touch.clientX, touch.clientY);
+    };
+    
+    const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        handleMove(touch.clientX, touch.clientY);
+    };
+    
+    const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
+        e.preventDefault();
+        handleEnd();
+    };
 
     const handleExport = () => {
         const canvas = canvasRef.current;
-
         if (!canvas) return;
-
+        
+        // Redraw without borders for export
+        redrawCanvas(false);
+        
         const link = document.createElement('a');
-
         link.download = 'masked-document.png';
-
         link.href = canvas.toDataURL('image/png');
-
         link.click();
+        
+        // Restore borders
+        redrawCanvas(true);
     };
 
     return (
@@ -153,18 +155,19 @@ export function ImageCanvas({
             <div className="mb-4 flex gap-2">
                 <button
                     onClick={() => setSelectedMaskType('black')}
+                    className={`rounded-lg px-4 py-2 ${selectedMaskType === 'black' ? 'bg-zinc-700' : 'bg-zinc-800'}`}
                 >
                     Black
                 </button>
-
                 <button
                     onClick={() => setSelectedMaskType('pixelate')}
+                    className={`rounded-lg px-4 py-2 ${selectedMaskType === 'pixelate' ? 'bg-zinc-700' : 'bg-zinc-800'}`}
                 >
                     Pixelate
                 </button>
-
                 <button
                     onClick={() => setSelectedMaskType('blur')}
+                    className={`rounded-lg px-4 py-2 ${selectedMaskType === 'blur' ? 'bg-zinc-700' : 'bg-zinc-800'}`}
                 >
                     Blur
                 </button>
@@ -180,12 +183,23 @@ export function ImageCanvas({
                 >
                     Export Image
                 </button>
+                <button
+                    onClick={onRemoveImage}
+                    className="rounded-lg bg-red-600 px-4 py-2"
+                >
+                    Remove Image
+                </button>
             </div>
             <canvas
                 ref={canvasRef}
                 onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
-                className="max-w-full rounded-2xl border border-zinc-800 cursor-crosshair"
+                onMouseLeave={handleMouseLeave}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                className="max-w-full rounded-2xl border border-zinc-800 cursor-crosshair touch-none"
             />
         </>
     );
