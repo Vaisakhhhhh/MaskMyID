@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { UploadZone } from '@/features/upload/components/UploadZone';
 import type { UploadedImage } from '@/features/upload/types/upload.types';
+import { ImageCanvas } from '@/features/editor/components/ImageCanvas';
 
 function App() {
   const [image, setImage] = useState<UploadedImage | null>(null);
@@ -35,11 +36,18 @@ function App() {
           </p>
         </header>
 
-        <UploadZone
-          image={image}
-          onImageUpload={setImage}
-          onRemoveImage={handleRemoveImage}
-        />
+        {image ? (
+          <section className="mx-auto max-w-6xl">
+            <ImageCanvas imageUrl={image.preview} />
+          </section>
+        ) : (
+          <UploadZone
+            image={image}
+            onImageUpload={setImage}
+            onRemoveImage={handleRemoveImage}
+          />
+        )}
+
       </div>
     </main>
   );
