@@ -35,22 +35,20 @@ export function EditorToolbar({
                 <div className="grid grid-cols-2 gap-2">
                     <button
                         onClick={() => setSelectedMaskShape('rectangle')}
-                        className={`flex flex-col items-center justify-center p-3 rounded-xl border font-medium text-sm transition ${
-                            selectedMaskShape === 'rectangle' 
-                                ? 'border-blue-500 bg-blue-500/10 text-blue-400' 
+                        className={`flex flex-col items-center justify-center p-3 rounded-xl border font-medium text-sm transition ${selectedMaskShape === 'rectangle'
+                                ? 'border-blue-500 bg-blue-500/10 text-blue-400'
                                 : 'border-zinc-800 bg-zinc-800/40 hover:bg-zinc-800 text-zinc-300 hover:text-white'
-                        }`}
+                            }`}
                     >
                         <Square className="w-5 h-5 mb-1.5" />
                         Rectangle
                     </button>
                     <button
                         onClick={() => setSelectedMaskShape('circle')}
-                        className={`flex flex-col items-center justify-center p-3 rounded-xl border font-medium text-sm transition ${
-                            selectedMaskShape === 'circle' 
-                                ? 'border-blue-500 bg-blue-500/10 text-blue-400' 
+                        className={`flex flex-col items-center justify-center p-3 rounded-xl border font-medium text-sm transition ${selectedMaskShape === 'circle'
+                                ? 'border-blue-500 bg-blue-500/10 text-blue-400'
                                 : 'border-zinc-800 bg-zinc-800/40 hover:bg-zinc-800 text-zinc-300 hover:text-white'
-                        }`}
+                            }`}
                     >
                         <Circle className="w-5 h-5 mb-1.5" />
                         Circle
@@ -65,33 +63,30 @@ export function EditorToolbar({
                 <div className="flex flex-col gap-2">
                     <button
                         onClick={() => setSelectedMaskType('black')}
-                        className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg border font-medium text-sm transition text-left ${
-                            selectedMaskType === 'black'
+                        className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg border font-medium text-sm transition text-left ${selectedMaskType === 'black'
                                 ? 'border-zinc-700 bg-zinc-800 text-white'
                                 : 'border-transparent hover:border-zinc-700 bg-zinc-800/40 hover:bg-zinc-800 text-zinc-300 hover:text-white'
-                        }`}
+                            }`}
                     >
                         <span className="w-4 h-4 rounded bg-black border border-zinc-600"></span>
                         Solid Black
                     </button>
                     <button
                         onClick={() => setSelectedMaskType('pixelate')}
-                        className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg border font-medium text-sm transition text-left ${
-                            selectedMaskType === 'pixelate'
+                        className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg border font-medium text-sm transition text-left ${selectedMaskType === 'pixelate'
                                 ? 'border-zinc-700 bg-zinc-800 text-white'
                                 : 'border-transparent hover:border-zinc-700 bg-zinc-800/40 hover:bg-zinc-800 text-zinc-300 hover:text-white'
-                        }`}
+                            }`}
                     >
                         <Grid className={`w-4 h-4 ${selectedMaskType === 'pixelate' ? 'text-white' : 'text-zinc-400'}`} />
                         Pixelate
                     </button>
                     <button
                         onClick={() => setSelectedMaskType('blur')}
-                        className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg border font-medium text-sm transition text-left ${
-                            selectedMaskType === 'blur'
+                        className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg border font-medium text-sm transition text-left ${selectedMaskType === 'blur'
                                 ? 'border-zinc-700 bg-zinc-800 text-white'
                                 : 'border-transparent hover:border-zinc-700 bg-zinc-800/40 hover:bg-zinc-800 text-zinc-300 hover:text-white'
-                        }`}
+                            }`}
                     >
                         <EyeOff className={`w-4 h-4 ${selectedMaskType === 'blur' ? 'text-white' : 'text-zinc-400'}`} />
                         Blur
