@@ -22,6 +22,18 @@ export function drawMask(
 
     ctx.save();
     
+    if (mask.shape === 'circle') {
+        ctx.beginPath();
+        ctx.ellipse(
+            mask.x + mask.width / 2, 
+            mask.y + mask.height / 2, 
+            mask.width / 2, 
+            mask.height / 2, 
+            0, 0, 2 * Math.PI
+        );
+        ctx.clip();
+    }
+    
     switch (mask.type) {
         case 'black':
             ctx.fillStyle = '#000';
@@ -52,7 +64,20 @@ export function drawMask(
     if (showBorder) {
         ctx.strokeStyle = isSelected ? '#3b82f6' : 'rgba(107, 114, 128, 0.5)';
         ctx.lineWidth = isSelected ? 2 : 1;
-        ctx.strokeRect(mask.x, mask.y, mask.width, mask.height);
+        
+        if (mask.shape === 'circle') {
+            ctx.beginPath();
+            ctx.ellipse(
+                mask.x + mask.width / 2, 
+                mask.y + mask.height / 2, 
+                mask.width / 2, 
+                mask.height / 2, 
+                0, 0, 2 * Math.PI
+            );
+            ctx.stroke();
+        } else {
+            ctx.strokeRect(mask.x, mask.y, mask.width, mask.height);
+        }
         
         if (isSelected) {
             ctx.fillStyle = '#ffffff';

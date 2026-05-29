@@ -1,8 +1,10 @@
-import type { MaskType } from '../types/mask.types';
+import type { MaskType, MaskShape } from '../types/mask.types';
 
 interface EditorToolbarProps {
     selectedMaskType: MaskType;
     setSelectedMaskType: (type: MaskType) => void;
+    selectedMaskShape: MaskShape;
+    setSelectedMaskShape: (shape: MaskShape) => void;
     canUndo: boolean;
     canRedo: boolean;
     handleUndo: () => void;
@@ -17,6 +19,8 @@ interface EditorToolbarProps {
 export function EditorToolbar({
     selectedMaskType,
     setSelectedMaskType,
+    selectedMaskShape,
+    setSelectedMaskShape,
     canUndo,
     canRedo,
     handleUndo,
@@ -29,6 +33,21 @@ export function EditorToolbar({
 }: EditorToolbarProps) {
     return (
         <div className="mb-4 flex flex-wrap gap-2">
+            <button
+                onClick={() => setSelectedMaskShape('rectangle')}
+                className={`rounded-lg px-4 py-2 ${selectedMaskShape === 'rectangle' ? 'bg-zinc-700' : 'bg-zinc-800'}`}
+            >
+                Rectangle
+            </button>
+            <button
+                onClick={() => setSelectedMaskShape('circle')}
+                className={`rounded-lg px-4 py-2 ${selectedMaskShape === 'circle' ? 'bg-zinc-700' : 'bg-zinc-800'}`}
+            >
+                Circle
+            </button>
+            
+            <div className="mx-2 w-px bg-zinc-800"></div>
+
             <button
                 onClick={() => setSelectedMaskType('black')}
                 className={`rounded-lg px-4 py-2 ${selectedMaskType === 'black' ? 'bg-zinc-700' : 'bg-zinc-800'}`}

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import type { MaskRect, MaskType, ResizeHandle } from '../types/mask.types';
+import type { MaskRect, MaskType, MaskShape, ResizeHandle } from '../types/mask.types';
 import { HANDLE_SIZE } from '../utils/drawCanvas';
 
 export type InteractionMode = 'idle' | 'drawing' | 'moving' | 'resizing';
@@ -14,6 +14,7 @@ export function useCanvasInteraction(
     const [selectedMaskId, setSelectedMaskId] = useState<string | null>(null);
     const [resizeHandle, setResizeHandle] = useState<ResizeHandle | null>(null);
     const [selectedMaskType, setSelectedMaskType] = useState<MaskType>('black');
+    const [selectedMaskShape, setSelectedMaskShape] = useState<MaskShape>('rectangle');
     
     const startPointRef = useRef({ x: 0, y: 0 });
     const currentPointRef = useRef({ x: 0, y: 0 });
@@ -105,6 +106,7 @@ export function useCanvasInteraction(
                 width: Math.abs(end.x - start.x),
                 height: Math.abs(end.y - start.y),
                 type: selectedMaskType,
+                shape: selectedMaskShape,
             };
             
             if (newMask.width > 5 && newMask.height > 5) {
@@ -154,7 +156,7 @@ export function useCanvasInteraction(
         
         setInteractionMode('idle');
         setResizeHandle(null);
-    }, [interactionMode, masks, selectedMaskType, selectedMaskId, resizeHandle, pushHistory]);
+    }, [interactionMode, masks, selectedMaskType, selectedMaskShape, selectedMaskId, resizeHandle, pushHistory]);
 
     return {
         interactionMode,
@@ -163,6 +165,8 @@ export function useCanvasInteraction(
         resizeHandle,
         selectedMaskType,
         setSelectedMaskType,
+        selectedMaskShape,
+        setSelectedMaskShape,
         startPointRef,
         currentPointRef,
         handleStart,

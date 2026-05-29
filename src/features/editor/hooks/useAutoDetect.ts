@@ -27,7 +27,8 @@ export function useAutoDetect(
                         for (const m of detectedMasks) {
                             newMasks.push({
                                 ...m,
-                                id: crypto.randomUUID()
+                                id: crypto.randomUUID(),
+                                shape: 'rectangle', // AI detection defaults to rectangle
                             });
                         }
                         return [...prev, newMasks];

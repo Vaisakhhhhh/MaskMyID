@@ -50,7 +50,8 @@ export const autoDetectMasks = async (imageUrl: string, type: MaskType): Promise
                 y: minY - padding,
                 width: (maxX - minX) + (padding * 2),
                 height: (maxY - minY) + (padding * 2),
-                type: type
+                type: type,
+                shape: 'rectangle'
             });
         } else {
             // fallback to line bbox
@@ -59,7 +60,8 @@ export const autoDetectMasks = async (imageUrl: string, type: MaskType): Promise
                 y: line.bbox.y0,
                 width: line.bbox.x1 - line.bbox.x0,
                 height: line.bbox.y1 - line.bbox.y0,
-                type: type
+                type: type,
+                shape: 'rectangle'
             });
         }
     }

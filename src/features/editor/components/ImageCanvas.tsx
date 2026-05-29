@@ -37,6 +37,8 @@ export function ImageCanvas({
         resizeHandle,
         selectedMaskType,
         setSelectedMaskType,
+        selectedMaskShape,
+        setSelectedMaskShape,
         startPointRef,
         currentPointRef,
         handleStart,
@@ -69,6 +71,7 @@ export function ImageCanvas({
                     width: Math.abs(end.x - start.x),
                     height: Math.abs(end.y - start.y),
                     type: selectedMaskType,
+                    shape: selectedMaskShape,
                 };
                 drawMask(ctx, previewMask, true, true);
             } else if (selectedMaskId) {
@@ -189,6 +192,8 @@ export function ImageCanvas({
             <EditorToolbar
                 selectedMaskType={selectedMaskType}
                 setSelectedMaskType={setSelectedMaskType}
+                selectedMaskShape={selectedMaskShape}
+                setSelectedMaskShape={setSelectedMaskShape}
                 canUndo={canUndo}
                 canRedo={canRedo}
                 handleUndo={handleUndo}
