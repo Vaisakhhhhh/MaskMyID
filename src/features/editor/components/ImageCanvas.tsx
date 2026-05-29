@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { MaskRect, MaskType, ResizeHandle } from '../types/mask.types';
 import { drawImage, drawAllMasks, drawMask, HANDLE_SIZE } from '../utils/drawCanvas';
+import { autoDetectMasks } from '../utils/ocrDetector';
 
 interface ImageCanvasProps {
     imageUrl: string;
@@ -142,6 +143,49 @@ export function ImageCanvas({
         };
         image.src = imageUrl;
     }, [imageUrl, redrawCanvas]);
+
+    const autoDetectAttemptedRef = useRef<string | null>(null);
+    
+    useEffect(() => {
+        if (autoDetectAttemptedRef.current === imageUrl) return;
+        autoDetectAttemptedRef.current = imageUrl;
+        
+        let isMounted = true;
+        
+        const detect = async () => {
+            try {
+                // By default, auto-detected masks will be black
+                const detectedMasks = await autoDetectMasks(imageUrl, 'black');
+                if (!isMounted) return;
+                
+                if (detectedMasks.length > 0) {
+                    setHistory(prev => {
+                        const currentMasks = prev[prev.length - 1] || [];
+                        const newMasks = [...currentMasks];
+                        for (const m of detectedMasks) {
+                            newMasks.push({
+                                ...m,
+                                id: crypto.randomUUID()
+                            });
+                        }
+                        return [...prev, newMasks];
+                    });
+                    setHistoryIndex(prev => prev + 1);
+                }
+            } catch (error) {
+                console.error("OCR Auto-detect failed:", error);
+            }
+        };
+        
+        detect();
+        
+        return () => { 
+            isMounted = false; 
+            if (autoDetectAttemptedRef.current === imageUrl) {
+                autoDetectAttemptedRef.current = null;
+            }
+        };
+    }, [imageUrl]);
 
     useEffect(() => {
         redrawCanvas();
@@ -297,6 +341,8 @@ export function ImageCanvas({
         setSelectedMaskId(null);
     };
 
+
+
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => handleStart(e.clientX, e.clientY);
     const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => handleMove(e.clientX, e.clientY);
     const handleMouseUp = () => handleEnd();
@@ -383,6 +429,8 @@ export function ImageCanvas({
                 >
                     Clear All
                 </button>
+
+                <div className="mx-2 w-px bg-zinc-800"></div>
                 <button
                     onClick={handleExport}
                     className="rounded-lg bg-blue-600 px-4 py-2"
