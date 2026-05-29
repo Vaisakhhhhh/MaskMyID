@@ -191,9 +191,21 @@ export function ImageCanvas({
         <>
             <EditorToolbar
                 selectedMaskType={selectedMaskType}
-                setSelectedMaskType={setSelectedMaskType}
+                setSelectedMaskType={(type) => {
+                    setSelectedMaskType(type);
+                    if (selectedMaskId) {
+                        const newMasks = masks.map(m => m.id === selectedMaskId ? { ...m, type } : m);
+                        pushHistory(newMasks);
+                    }
+                }}
                 selectedMaskShape={selectedMaskShape}
-                setSelectedMaskShape={setSelectedMaskShape}
+                setSelectedMaskShape={(shape) => {
+                    setSelectedMaskShape(shape);
+                    if (selectedMaskId) {
+                        const newMasks = masks.map(m => m.id === selectedMaskId ? { ...m, shape } : m);
+                        pushHistory(newMasks);
+                    }
+                }}
                 canUndo={canUndo}
                 canRedo={canRedo}
                 handleUndo={handleUndo}
