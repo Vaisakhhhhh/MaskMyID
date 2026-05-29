@@ -14,7 +14,10 @@ export function ImageCanvas({
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const imageRef = useRef<HTMLImageElement | null>(null);
     
-    const [masks, setMasks] = useState<MaskRect[]>([]);
+    const [history, setHistory] = useState<MaskRect[][]>([[]]);
+    const [historyIndex, setHistoryIndex] = useState(0);
+    const masks = history[historyIndex];
+
     const [isDrawing, setIsDrawing] = useState(false);
     const [selectedMaskType, setSelectedMaskType] = useState<MaskType>('black');
     
@@ -77,6 +80,35 @@ export function ImageCanvas({
         redrawCanvas();
     }, [masks, isDrawing, selectedMaskType, redrawCanvas]);
 
+    const handleUndo = useCallback(() => {
+        setHistoryIndex((prev) => Math.max(0, prev - 1));
+    }, []);
+
+    const handleRedo = useCallback(() => {
+        setHistoryIndex((prev) => Math.min(history.length - 1, prev + 1));
+    }, [history.length]);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key.toLowerCase() === 'z') {
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        handleRedo();
+                    } else {
+                        handleUndo();
+                    }
+                } else if (e.key.toLowerCase() === 'y') {
+                    e.preventDefault();
+                    handleRedo();
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleUndo, handleRedo]);
+
     const handleStart = (clientX: number, clientY: number) => {
         const point = getCanvasCoordinates(clientX, clientY);
         startPointRef.current = point;
@@ -106,10 +138,20 @@ export function ImageCanvas({
         };
         
         if (newMask.width > 5 && newMask.height > 5) {
-            setMasks(prev => [...prev, newMask]);
+            const newHistory = history.slice(0, historyIndex + 1);
+            newHistory.push([...masks, newMask]);
+            setHistory(newHistory);
+            setHistoryIndex(newHistory.length - 1);
         }
         
         setIsDrawing(false);
+    };
+
+    const handleClearAll = () => {
+        const newHistory = history.slice(0, historyIndex + 1);
+        newHistory.push([]);
+        setHistory(newHistory);
+        setHistoryIndex(newHistory.length - 1);
     };
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => handleStart(e.clientX, e.clientY);
@@ -152,7 +194,7 @@ export function ImageCanvas({
 
     return (
         <>
-            <div className="mb-4 flex gap-2">
+            <div className="mb-4 flex flex-wrap gap-2">
                 <button
                     onClick={() => setSelectedMaskType('black')}
                     className={`rounded-lg px-4 py-2 ${selectedMaskType === 'black' ? 'bg-zinc-700' : 'bg-zinc-800'}`}
@@ -171,8 +213,24 @@ export function ImageCanvas({
                 >
                     Blur
                 </button>
+                <div className="mx-2 w-px bg-zinc-800"></div>
                 <button
-                    onClick={() => setMasks([])}
+                    onClick={handleUndo}
+                    disabled={historyIndex === 0}
+                    className={`rounded-lg px-4 py-2 ${historyIndex === 0 ? 'bg-zinc-800/50 text-zinc-500' : 'bg-zinc-800'}`}
+                >
+                    Undo
+                </button>
+                <button
+                    onClick={handleRedo}
+                    disabled={historyIndex === history.length - 1}
+                    className={`rounded-lg px-4 py-2 ${historyIndex === history.length - 1 ? 'bg-zinc-800/50 text-zinc-500' : 'bg-zinc-800'}`}
+                >
+                    Redo
+                </button>
+                <div className="mx-2 w-px bg-zinc-800"></div>
+                <button
+                    onClick={handleClearAll}
                     className="rounded-lg bg-zinc-800 px-4 py-2"
                 >
                     Clear All
