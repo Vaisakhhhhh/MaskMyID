@@ -61,7 +61,10 @@ export function drawMask(
             break;
     }
 
+    ctx.restore(); // Restore clipping path
+
     if (showBorder) {
+        ctx.save(); // Save state for border
         ctx.strokeStyle = isSelected ? '#3b82f6' : 'rgba(107, 114, 128, 0.5)';
         ctx.lineWidth = isSelected ? 2 : 1;
         
@@ -96,9 +99,8 @@ export function drawMask(
                 ctx.strokeRect(h.x, h.y, HANDLE_SIZE, HANDLE_SIZE);
             });
         }
+        ctx.restore(); // Restore border state
     }
-    
-    ctx.restore();
 }
 
 export function drawAllMasks(
