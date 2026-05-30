@@ -20,7 +20,7 @@ export function ImageCanvas({
 }: ImageCanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const imageRef = useRef<HTMLImageElement | null>(null);
-    
+
     const {
         masks,
         setHistory,
@@ -54,18 +54,18 @@ export function ImageCanvas({
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext('2d');
         const image = imageRef.current;
-        
+
         if (!canvas || !ctx || !image) return;
 
         drawImage(ctx, image, canvas);
-        
+
         const activeMasks = masks.filter(m => !(interactionMode !== 'idle' && interactionMode !== 'drawing' && m.id === selectedMaskId));
         drawAllMasks(ctx, activeMasks, showBorders, selectedMaskId);
-        
+
         if (interactionMode !== 'idle' && showBorders) {
             const start = startPointRef.current;
             const end = currentPointRef.current;
-            
+
             if (interactionMode === 'drawing') {
                 const previewMask: MaskRect = {
                     id: 'preview',
@@ -83,7 +83,7 @@ export function ImageCanvas({
                     const dx = end.x - start.x;
                     const dy = end.y - start.y;
                     let preview = { ...selected };
-                    
+
                     if (interactionMode === 'moving') {
                         preview.x += dx;
                         preview.y += dy;
@@ -92,7 +92,7 @@ export function ImageCanvas({
                         if (resizeHandle.includes('s')) { preview.height += dy; }
                         if (resizeHandle.includes('w')) { preview.x += dx; preview.width -= dx; }
                         if (resizeHandle.includes('e')) { preview.width += dx; }
-                        
+
                         if (preview.width < 5) {
                             if (resizeHandle.includes('w')) preview.x += (preview.width - 5);
                             preview.width = 5;
@@ -164,13 +164,13 @@ export function ImageCanvas({
         const touch = e.touches[0];
         handleStart(touch.clientX, touch.clientY);
     };
-    
+
     const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
         e.preventDefault();
         const touch = e.touches[0];
         handleMove(touch.clientX, touch.clientY);
     };
-    
+
     const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
         e.preventDefault();
         handleEnd();
@@ -179,22 +179,22 @@ export function ImageCanvas({
     const handleExport = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-        
+
         redrawCanvas(false);
-        
+
         const link = document.createElement('a');
         link.download = 'masked-document.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
-        
+
         redrawCanvas(true);
     };
 
     return (
         <div className="flex flex-col h-full w-full">
             <header className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-md">
-                <div className="flex flex-col cursor-pointer hover:opacity-80 transition" onClick={onGoHome}>
-                    <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                <div className="flex flex-col">
+                    <h1 className="text-xl font-bold cursor-pointer tracking-tight text-white flex items-center gap-2 hover:opacity-80 transition" onClick={onGoHome}>
                         <ShieldCheck className="w-5 h-5 text-blue-500" /> MaskMyID <span className="text-xs font-normal bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20">v1.0</span>
                     </h1>
                     <p className="text-xs text-zinc-400 hidden sm:block">Privacy-first document masking. Your files never leave your device.</p>
@@ -202,12 +202,12 @@ export function ImageCanvas({
 
                 <div className="flex items-center gap-3">
                     <button onClick={onRemoveImage}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800">
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer">
                         <Trash2 className="w-4 h-4 text-red-400" />
                         Remove Image
                     </button>
                     <button onClick={handleExport}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white transition bg-blue-600 rounded-lg hover:bg-blue-500 shadow-md shadow-blue-600/10">
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white transition bg-blue-600 rounded-lg hover:bg-blue-500 shadow-md shadow-blue-600/10 cursor-pointer">
                         <Download className="w-4 h-4" />
                         Export Image
                     </button>
@@ -243,7 +243,7 @@ export function ImageCanvas({
                     }}
                     handleClearAll={handleClearAll}
                 />
-                
+
                 <section className="flex-1 bg-zinc-950 p-6 flex items-center justify-center overflow-auto relative">
                     <div className="relative max-h-full max-w-4xl rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/20 shadow-2xl p-2 group">
                         <canvas
@@ -255,11 +255,10 @@ export function ImageCanvas({
                             onTouchStart={handleTouchStart}
                             onTouchMove={handleTouchMove}
                             onTouchEnd={handleTouchEnd}
-                            className={`max-h-[70vh] max-w-full rounded-xl object-contain shadow-lg block touch-none ${
-                                interactionMode === 'moving' ? 'cursor-move' : 
-                                interactionMode === 'resizing' ? 'cursor-nwse-resize' : 
-                                selectedMaskId ? 'cursor-default' : 'cursor-crosshair'
-                            }`}
+                            className={`max-h-[70vh] max-w-full rounded-xl object-contain shadow-lg block touch-none ${interactionMode === 'moving' ? 'cursor-move' :
+                                interactionMode === 'resizing' ? 'cursor-nwse-resize' :
+                                    selectedMaskId ? 'cursor-default' : 'cursor-crosshair'
+                                }`}
                         />
                         <div className="absolute inset-2 pointer-events-none rounded-xl border border-white/5 mix-blend-overlay"></div>
                     </div>

@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowUpRight, Shield, ShieldCheck, Sparkles, Zap, EyeOff, Lock } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Shield, ShieldCheck, Sparkles, Zap, EyeOff, Lock, ArrowUp } from 'lucide-react';
 import heroImage from '@/assets/hero.avif';
 
 interface LandingPageProps {
@@ -7,7 +7,7 @@ interface LandingPageProps {
 
 export function LandingPage({ onLaunchApp }: LandingPageProps) {
     return (
-        <div className="bg-grid text-zinc-100 h-full w-full overflow-y-auto block">
+        <div className="bg-grid text-zinc-100 h-full w-full overflow-y-auto block scroll-smooth">
             <style>{`
         .bg-grid {
             background-size: 40px 40px;
@@ -16,7 +16,7 @@ export function LandingPage({ onLaunchApp }: LandingPageProps) {
         }
       `}</style>
 
-            <nav className="sticky top-0 z-50 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md">
+            <nav id="top" className="sticky top-0 z-50 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <span className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
@@ -32,7 +32,7 @@ export function LandingPage({ onLaunchApp }: LandingPageProps) {
 
                     <div>
                         <button onClick={onLaunchApp}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 transition">
+                            className="inline-flex cursor-pointer items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 transition">
                             Launch App <ArrowUpRight className="w-4 h-4" />
                         </button>
                     </div>
@@ -61,7 +61,7 @@ export function LandingPage({ onLaunchApp }: LandingPageProps) {
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <button onClick={onLaunchApp}
-                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-500 transition shadow-lg shadow-blue-600/10">
+                            className="w-full cursor-pointer sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-500 transition shadow-lg shadow-blue-600/10">
                             <Sparkles className="w-5 h-5" /> Start Masking Free
                         </button>
                         <a href="#how-it-works"
@@ -180,7 +180,7 @@ export function LandingPage({ onLaunchApp }: LandingPageProps) {
                         data offline and safe from online fraud exposures.</p>
 
                     <button onClick={onLaunchApp}
-                        className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-500 transition shadow-lg shadow-blue-600/15">
+                        className="inline-flex cursor-pointer items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-500 transition shadow-lg shadow-blue-600/15">
                         Launch Editor Panel <ArrowRight className="w-4 h-4" />
                     </button>
                 </div>
@@ -190,6 +190,16 @@ export function LandingPage({ onLaunchApp }: LandingPageProps) {
                 <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <p>&copy; 2026 MaskMyID. Open-source, client-side, privacy design.</p>
                     <div className="flex items-center gap-6">
+                        <button
+                            onClick={(e) => {
+                                const container = e.currentTarget.closest('.overflow-y-auto');
+                                if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className="flex items-center gap-1.5 hover:text-white transition cursor-pointer"
+                        >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                            Back to top
+                        </button>
                         <span className="flex items-center gap-1 text-emerald-500/90">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                             Fully Local Processing Active
