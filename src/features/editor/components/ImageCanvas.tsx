@@ -202,29 +202,31 @@ export function ImageCanvas({
 
     return (
         <div className="flex flex-col h-full w-full">
-            <header className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-md">
+            <header className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-md flex-shrink-0 z-10">
                 <div className="flex flex-col">
-                    <h1 className="text-xl font-bold cursor-pointer tracking-tight text-white flex items-center gap-2 hover:opacity-80 transition" onClick={onGoHome}>
-                        <ShieldCheck className="w-5 h-5 text-blue-500" /> MaskMyID <span className="text-xs font-normal bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20">v1.0</span>
+                    <h1 className="text-lg sm:text-xl font-bold cursor-pointer tracking-tight text-white flex items-center gap-2 hover:opacity-80 transition" onClick={onGoHome}>
+                        <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" /> MaskMyID <span className="hidden sm:inline-block text-xs font-normal bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20">v1.0</span>
                     </h1>
                     <p className="text-xs text-zinc-400 hidden sm:block">Privacy-first document masking. Your files never leave your device.</p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                     <button onClick={onRemoveImage}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer">
-                        <Trash2 className="w-4 h-4 text-red-400" />
-                        Remove Image
+                        className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium transition rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer">
+                        <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-400" />
+                        <span className="hidden sm:inline">Remove Image</span>
+                        <span className="sm:hidden">Remove</span>
                     </button>
                     <button onClick={handleExport}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white transition bg-blue-600 rounded-lg hover:bg-blue-500 shadow-md shadow-blue-600/10 cursor-pointer">
-                        <Download className="w-4 h-4" />
-                        Export Image
+                        className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-white transition bg-blue-600 rounded-lg hover:bg-blue-500 shadow-md shadow-blue-600/10 cursor-pointer">
+                        <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <span className="hidden sm:inline">Export Image</span>
+                        <span className="sm:hidden">Export</span>
                     </button>
                 </div>
             </header>
 
-            <main className="flex flex-1 flex-col lg:flex-row overflow-hidden">
+            <main className="flex flex-1 flex-col lg:flex-row overflow-hidden min-h-0">
                 <EditorToolbar
                     selectedMaskType={selectedMaskType}
                     setSelectedMaskType={(type) => {
@@ -254,10 +256,10 @@ export function ImageCanvas({
                     handleClearAll={handleClearAll}
                 />
 
-                <div className="flex-1 relative flex flex-col min-w-0 bg-zinc-950">
+                <div className="flex-1 relative flex flex-col min-w-0 bg-zinc-950 order-1 lg:order-2 min-h-0">
                     <section className="flex-1 overflow-auto">
-                        <div className="min-w-full min-h-full w-max h-max flex items-center justify-center p-6">
-                            <div className="relative max-h-full max-w-4xl rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/20 shadow-2xl p-2 group" style={zoom !== 1 ? { maxHeight: 'none', maxWidth: 'none' } : undefined}>
+                        <div className="min-w-full min-h-full w-max h-max flex items-center justify-center p-4 sm:p-6">
+                            <div className="relative max-h-full max-w-[100vw] lg:max-w-4xl rounded-xl sm:rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/20 shadow-2xl p-1.5 sm:p-2 group" style={zoom !== 1 ? { maxHeight: 'none', maxWidth: 'none' } : undefined}>
                                 <canvas
                                     ref={canvasRef}
                                     onMouseDown={handleMouseDown}
@@ -268,7 +270,7 @@ export function ImageCanvas({
                                     onTouchMove={handleTouchMove}
                                     onTouchEnd={handleTouchEnd}
                                     className={`rounded-xl object-contain shadow-lg block touch-none ${
-                                        zoom === 1 ? 'max-h-[70vh] max-w-full' : ''
+                                        zoom === 1 ? 'max-h-[40vh] lg:max-h-[70vh] max-w-full' : ''
                                     } ${
                                         interactionMode === 'moving' ? 'cursor-move' :
                                         interactionMode === 'resizing' ? 'cursor-nwse-resize' :

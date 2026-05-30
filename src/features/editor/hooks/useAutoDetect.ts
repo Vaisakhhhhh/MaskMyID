@@ -2,6 +2,12 @@ import { useEffect, useRef } from 'react';
 import type { MaskRect } from '../types/mask.types';
 import { autoDetectMasks } from '../utils/ocrDetector';
 
+const generateId = () => {
+    return typeof crypto !== 'undefined' && crypto.randomUUID 
+        ? crypto.randomUUID() 
+        : Math.random().toString(36).substring(2, 15);
+};
+
 export function useAutoDetect(
     imageUrl: string,
     setHistory: React.Dispatch<React.SetStateAction<MaskRect[][]>>,
@@ -27,7 +33,7 @@ export function useAutoDetect(
                         for (const m of detectedMasks) {
                             newMasks.push({
                                 ...m,
-                                id: crypto.randomUUID(),
+                                id: generateId(),
                                 shape: 'rectangle', // AI detection defaults to rectangle
                             });
                         }
