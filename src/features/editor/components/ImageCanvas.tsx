@@ -270,7 +270,7 @@ export function ImageCanvas({
                                     onTouchMove={handleTouchMove}
                                     onTouchEnd={handleTouchEnd}
                                     className={`rounded-xl object-contain shadow-lg block touch-none ${
-                                        zoom === 1 ? 'max-h-[70vh] max-w-full' : ''
+                                        zoom === 1 ? 'max-h-[40vh] lg:max-h-[70vh] max-w-full' : ''
                                     } ${
                                         interactionMode === 'moving' ? 'cursor-move' :
                                         interactionMode === 'resizing' ? 'cursor-nwse-resize' :
