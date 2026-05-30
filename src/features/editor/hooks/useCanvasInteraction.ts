@@ -35,7 +35,10 @@ export function useCanvasInteraction(
         if (selectedMaskId) {
             const selected = masksList.find(m => m.id === selectedMaskId);
             if (selected) {
-                const HANDLE_HALF = HANDLE_SIZE / 2;
+                const canvas = canvasRef.current;
+                const scale = canvas && canvas.clientWidth > 0 ? canvas.width / canvas.clientWidth : 1;
+                // Use a slightly larger hit area (1.5x) for easier interaction on touch/mouse
+                const HANDLE_HALF = (HANDLE_SIZE * scale * 1.5) / 2;
                 const handles: { type: ResizeHandle; hx: number; hy: number }[] = [
                     { type: 'nw', hx: selected.x, hy: selected.y },
                     { type: 'ne', hx: selected.x + selected.width, hy: selected.y },

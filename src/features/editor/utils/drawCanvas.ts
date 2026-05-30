@@ -68,8 +68,9 @@ export function drawMask(
 
     if (showBorder) {
         ctx.save(); // Save state for border
+        const scale = ctx.canvas && ctx.canvas.clientWidth > 0 ? ctx.canvas.width / ctx.canvas.clientWidth : 1;
         ctx.strokeStyle = isSelected ? '#3b82f6' : 'rgba(107, 114, 128, 0.5)';
-        ctx.lineWidth = isSelected ? 2 : 1;
+        ctx.lineWidth = (isSelected ? 2 : 1) * scale;
         
         if (mask.shape === 'circle') {
             ctx.beginPath();
@@ -88,18 +89,21 @@ export function drawMask(
         if (isSelected) {
             ctx.fillStyle = '#ffffff';
             ctx.strokeStyle = '#3b82f6';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 2 * scale;
+            
+            const scaledHandleSize = HANDLE_SIZE * scale;
+            const handleHalf = scaledHandleSize / 2;
             
             const handles = [
-                { x: mask.x - HANDLE_SIZE/2, y: mask.y - HANDLE_SIZE/2 }, // nw
-                { x: mask.x + mask.width - HANDLE_SIZE/2, y: mask.y - HANDLE_SIZE/2 }, // ne
-                { x: mask.x - HANDLE_SIZE/2, y: mask.y + mask.height - HANDLE_SIZE/2 }, // sw
-                { x: mask.x + mask.width - HANDLE_SIZE/2, y: mask.y + mask.height - HANDLE_SIZE/2 }, // se
+                { x: mask.x - handleHalf, y: mask.y - handleHalf }, // nw
+                { x: mask.x + mask.width - handleHalf, y: mask.y - handleHalf }, // ne
+                { x: mask.x - handleHalf, y: mask.y + mask.height - handleHalf }, // sw
+                { x: mask.x + mask.width - handleHalf, y: mask.y + mask.height - handleHalf }, // se
             ];
             
             handles.forEach(h => {
-                ctx.fillRect(h.x, h.y, HANDLE_SIZE, HANDLE_SIZE);
-                ctx.strokeRect(h.x, h.y, HANDLE_SIZE, HANDLE_SIZE);
+                ctx.fillRect(h.x, h.y, scaledHandleSize, scaledHandleSize);
+                ctx.strokeRect(h.x, h.y, scaledHandleSize, scaledHandleSize);
             });
         }
         ctx.restore(); // Restore border state
