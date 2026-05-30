@@ -31,6 +31,3 @@ Open [http://localhost:5173](http://localhost:5173) with your browser to see the
 * Tesseract.js (for local client-side OCR)
 * Vite
 * Lucide React (for icons)
-
-### 📝 License
-This project is open-source and available under the MIT License.
