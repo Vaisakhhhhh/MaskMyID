@@ -1,73 +1,33 @@
-# React + TypeScript + Vite
+# 🛡️ MaskMyID
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+MaskMyID is a powerful, privacy-first web application designed to help users securely redact sensitive information from personal documents before sharing them. 
 
-Currently, two official plugins are available:
+Built with React and modern web technologies, MaskMyID operates **100% locally in your browser**. Your documents are never uploaded to a server, ensuring absolute data privacy. It features an intelligent auto-detect OCR engine that scans for sensitive patterns (like Aadhaar numbers) and automatically suggests masks.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+### ✨ Key Highlights
+* **Zero-Server Privacy:** All processing, OCR detection, and image generation happens on your device.
+* **Smart Detection:** Automatically scans documents for sensitive data patterns.
+* **Rich Editing Suite:** Choose between Solid Black, Pixelate, or Blur masks in both Rectangle and Circle shapes.
+* **High-Performance Canvas:** Pan, zoom, and precisely edit masks on high-resolution images with ease.
 
-## React Compiler
+### 🚀 Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+First, install the dependencies:
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Then, run the development server:
+```bash
+npm run dev
 ```
+
+Open [http://localhost:5173](http://localhost:5173) with your browser to see the result.
+
+### 🛠️ Tech Stack
+* React
+* TypeScript
+* Tailwind CSS
+* Tesseract.js (for local client-side OCR)
+* Vite
+* Lucide React (for icons)
