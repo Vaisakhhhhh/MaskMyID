@@ -1,11 +1,11 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import type { MaskRect } from '../types/mask.types';
 import { drawImage, drawAllMasks, drawMask } from '../utils/drawCanvas';
 import { useCanvasHistory } from '../hooks/useCanvasHistory';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import { useAutoDetect } from '../hooks/useAutoDetect';
 import { EditorToolbar } from './EditorToolbar';
-import { Trash2, Download, ShieldCheck } from 'lucide-react';
+import { Trash2, Download, ShieldCheck, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface ImageCanvasProps {
     imageUrl: string;
@@ -20,6 +20,8 @@ export function ImageCanvas({
 }: ImageCanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const imageRef = useRef<HTMLImageElement | null>(null);
+    const [zoom, setZoom] = useState(1);
+    const [baseSize, setBaseSize] = useState<{ width: number; height: number } | null>(null);
 
     const {
         masks,
@@ -116,10 +118,18 @@ export function ImageCanvas({
                 canvasRef.current.width = image.width;
                 canvasRef.current.height = image.height;
                 redrawCanvas();
+                
+                // Use setTimeout to allow browser to calculate layout with CSS max- dimensions first
+                setTimeout(() => {
+                    if (canvasRef.current) {
+                        const rect = canvasRef.current.getBoundingClientRect();
+                        setBaseSize({ width: rect.width, height: rect.height });
+                    }
+                }, 0);
             }
         };
         image.src = imageUrl;
-    }, [imageUrl, redrawCanvas]);
+    }, [imageUrl]); // ONLY run when imageUrl changes!
 
     // Apply auto-detect OCR side-effect
     useAutoDetect(imageUrl, setHistory, setHistoryIndex);
@@ -244,25 +254,53 @@ export function ImageCanvas({
                     handleClearAll={handleClearAll}
                 />
 
-                <section className="flex-1 bg-zinc-950 p-6 flex items-center justify-center overflow-auto relative">
-                    <div className="relative max-h-full max-w-4xl rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/20 shadow-2xl p-2 group">
-                        <canvas
-                            ref={canvasRef}
-                            onMouseDown={handleMouseDown}
-                            onMouseMove={handleMouseMove}
-                            onMouseUp={handleMouseUp}
-                            onMouseLeave={handleMouseLeave}
-                            onTouchStart={handleTouchStart}
-                            onTouchMove={handleTouchMove}
-                            onTouchEnd={handleTouchEnd}
-                            className={`max-h-[70vh] max-w-full rounded-xl object-contain shadow-lg block touch-none ${interactionMode === 'moving' ? 'cursor-move' :
-                                interactionMode === 'resizing' ? 'cursor-nwse-resize' :
+                <div className="flex-1 relative flex flex-col min-w-0 bg-zinc-950">
+                    <section className="flex-1 p-6 overflow-auto flex">
+                        <div className="m-auto relative max-h-full max-w-4xl rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/20 shadow-2xl p-2 group" style={zoom !== 1 ? { maxHeight: 'none', maxWidth: 'none' } : undefined}>
+                            <canvas
+                                ref={canvasRef}
+                                onMouseDown={handleMouseDown}
+                                onMouseMove={handleMouseMove}
+                                onMouseUp={handleMouseUp}
+                                onMouseLeave={handleMouseLeave}
+                                onTouchStart={handleTouchStart}
+                                onTouchMove={handleTouchMove}
+                                onTouchEnd={handleTouchEnd}
+                                className={`rounded-xl object-contain shadow-lg block touch-none ${
+                                    zoom === 1 ? 'max-h-[70vh] max-w-full' : ''
+                                } ${
+                                    interactionMode === 'moving' ? 'cursor-move' :
+                                    interactionMode === 'resizing' ? 'cursor-nwse-resize' :
                                     selectedMaskId ? 'cursor-default' : 'cursor-crosshair'
                                 }`}
-                        />
-                        <div className="absolute inset-2 pointer-events-none rounded-xl border border-white/5 mix-blend-overlay"></div>
+                                style={zoom !== 1 && baseSize ? { width: baseSize.width * zoom, height: baseSize.height * zoom } : undefined}
+                            />
+                            <div className="absolute inset-2 pointer-events-none rounded-xl border border-white/5 mix-blend-overlay"></div>
+                        </div>
+                    </section>
+
+                    {/* Floating Zoom Controls */}
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 p-1 bg-zinc-900/90 backdrop-blur border border-zinc-800 rounded-lg shadow-xl">
+                        <button 
+                            onClick={() => setZoom((z: number) => Math.max(0.25, z - 0.25))}
+                            className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md transition cursor-pointer"
+                        >
+                            <ZoomOut className="w-4 h-4" />
+                        </button>
+                        <button 
+                            onClick={() => setZoom(1)}
+                            className="px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-md transition select-none min-w-[3.5rem] text-center cursor-pointer"
+                        >
+                            {Math.round(zoom * 100)}%
+                        </button>
+                        <button 
+                            onClick={() => setZoom((z: number) => Math.min(5, z + 0.25))}
+                            className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md transition cursor-pointer"
+                        >
+                            <ZoomIn className="w-4 h-4" />
+                        </button>
                     </div>
-                </section>
+                </div>
             </main>
         </div>
     );
