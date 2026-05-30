@@ -255,27 +255,29 @@ export function ImageCanvas({
                 />
 
                 <div className="flex-1 relative flex flex-col min-w-0 bg-zinc-950">
-                    <section className="flex-1 p-6 overflow-auto flex">
-                        <div className="m-auto relative max-h-full max-w-4xl rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/20 shadow-2xl p-2 group" style={zoom !== 1 ? { maxHeight: 'none', maxWidth: 'none' } : undefined}>
-                            <canvas
-                                ref={canvasRef}
-                                onMouseDown={handleMouseDown}
-                                onMouseMove={handleMouseMove}
-                                onMouseUp={handleMouseUp}
-                                onMouseLeave={handleMouseLeave}
-                                onTouchStart={handleTouchStart}
-                                onTouchMove={handleTouchMove}
-                                onTouchEnd={handleTouchEnd}
-                                className={`rounded-xl object-contain shadow-lg block touch-none ${
-                                    zoom === 1 ? 'max-h-[70vh] max-w-full' : ''
-                                } ${
-                                    interactionMode === 'moving' ? 'cursor-move' :
-                                    interactionMode === 'resizing' ? 'cursor-nwse-resize' :
-                                    selectedMaskId ? 'cursor-default' : 'cursor-crosshair'
-                                }`}
-                                style={zoom !== 1 && baseSize ? { width: baseSize.width * zoom, height: baseSize.height * zoom } : undefined}
-                            />
-                            <div className="absolute inset-2 pointer-events-none rounded-xl border border-white/5 mix-blend-overlay"></div>
+                    <section className="flex-1 overflow-auto">
+                        <div className="min-w-full min-h-full w-max h-max flex items-center justify-center p-6">
+                            <div className="relative max-h-full max-w-4xl rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/20 shadow-2xl p-2 group" style={zoom !== 1 ? { maxHeight: 'none', maxWidth: 'none' } : undefined}>
+                                <canvas
+                                    ref={canvasRef}
+                                    onMouseDown={handleMouseDown}
+                                    onMouseMove={handleMouseMove}
+                                    onMouseUp={handleMouseUp}
+                                    onMouseLeave={handleMouseLeave}
+                                    onTouchStart={handleTouchStart}
+                                    onTouchMove={handleTouchMove}
+                                    onTouchEnd={handleTouchEnd}
+                                    className={`rounded-xl object-contain shadow-lg block touch-none ${
+                                        zoom === 1 ? 'max-h-[70vh] max-w-full' : ''
+                                    } ${
+                                        interactionMode === 'moving' ? 'cursor-move' :
+                                        interactionMode === 'resizing' ? 'cursor-nwse-resize' :
+                                        selectedMaskId ? 'cursor-default' : 'cursor-crosshair'
+                                    }`}
+                                    style={zoom !== 1 && baseSize ? { width: baseSize.width * zoom, height: baseSize.height * zoom } : undefined}
+                                />
+                                <div className="absolute inset-2 pointer-events-none rounded-xl border border-white/5 mix-blend-overlay"></div>
+                            </div>
                         </div>
                     </section>
 
