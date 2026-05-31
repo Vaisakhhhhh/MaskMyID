@@ -171,19 +171,16 @@ export function ImageCanvas({
     const handleMouseLeave = () => { if (interactionMode !== 'idle') handleEnd(); };
 
     const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
-        e.preventDefault();
         const touch = e.touches[0];
         handleStart(touch.clientX, touch.clientY);
     };
 
     const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
-        e.preventDefault();
         const touch = e.touches[0];
         handleMove(touch.clientX, touch.clientY);
     };
 
-    const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
-        e.preventDefault();
+    const handleTouchEnd = () => {
         handleEnd();
     };
 
