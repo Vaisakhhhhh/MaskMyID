@@ -315,8 +315,8 @@ export function ImageCanvas({
             {showToast && (
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
                     <div className="flex items-center gap-2 bg-zinc-800 text-white px-4 py-3 rounded-xl shadow-xl shadow-black/50 border border-zinc-700/50">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                        <span className="text-sm font-medium">Image downloaded successfully</span>
+                        <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                        <span className="text-sm font-medium whitespace-nowrap">Image downloaded successfully</span>
                     </div>
                 </div>
             )}
