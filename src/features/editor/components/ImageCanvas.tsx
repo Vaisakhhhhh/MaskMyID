@@ -5,7 +5,7 @@ import { useCanvasHistory } from '../hooks/useCanvasHistory';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import { useAutoDetect } from '../hooks/useAutoDetect';
 import { EditorToolbar } from './EditorToolbar';
-import { Trash2, Download, ShieldCheck, ZoomIn, ZoomOut } from 'lucide-react';
+import { Trash2, Download, ShieldCheck, ZoomIn, ZoomOut, CheckCircle2 } from 'lucide-react';
 
 interface ImageCanvasProps {
     imageUrl: string;
@@ -22,6 +22,7 @@ export function ImageCanvas({
     const imageRef = useRef<HTMLImageElement | null>(null);
     const [zoom, setZoom] = useState(1);
     const [baseSize, setBaseSize] = useState<{ width: number; height: number } | null>(null);
+    const [showToast, setShowToast] = useState(false);
 
     const {
         masks,
@@ -198,6 +199,9 @@ export function ImageCanvas({
         link.click();
 
         redrawCanvas(true);
+        
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
     };
 
     return (
@@ -306,6 +310,16 @@ export function ImageCanvas({
                     </div>
                 </div>
             </main>
+
+            {/* Success Toast */}
+            {showToast && (
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <div className="flex items-center gap-2 bg-zinc-800 text-white px-4 py-3 rounded-xl shadow-xl shadow-black/50 border border-zinc-700/50">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                        <span className="text-sm font-medium">Image downloaded successfully</span>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
