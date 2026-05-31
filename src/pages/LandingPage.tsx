@@ -48,15 +48,14 @@ export function LandingPage({ onLaunchApp }: LandingPageProps) {
                     </div>
 
                     <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-[1.15] mb-6">
-                        Redact sensitive data. <br />
+                        Free online image masking. <br />
                         <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">
-                            Keep your identity yours.
+                            Redact sensitive data safely.
                         </span>
                     </h1>
 
                     <p className="text-base sm:text-xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-                        Mask IDs, passports, and utility bills instantly. Your files never touch a server—everything happens
-                        safely right inside your web browser.
+                        The best free image masking tool to obscure IDs, passports, and utility bills instantly. Your files never touch a server—document shielding happens safely right inside your web browser.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -91,7 +90,7 @@ export function LandingPage({ onLaunchApp }: LandingPageProps) {
                             <div className="flex-1 flex items-center justify-center p-8 bg-zinc-950 relative">
                                 <div className="relative rounded-lg overflow-hidden max-w-xs border border-zinc-800">
                                     <img src={heroImage}
-                                        alt="Sample Masking UI" className="brightness-75" />
+                                        alt="MaskMyID free online image masking tool interface showing document redaction" className="brightness-75" />
                                     <div className="absolute top-[20%] left-[25%] w-24 h-6 bg-black border border-zinc-600 rounded shadow-md flex items-center justify-center text-[8px] tracking-wider text-zinc-400 select-none">
                                         MASKED</div>
                                     <div className="absolute top-[45%] left-[15%] w-32 h-10 bg-zinc-900/40 backdrop-blur-md border border-white/10 rounded shadow-md flex items-center justify-center text-[8px] tracking-wider text-white select-none">
@@ -144,7 +143,7 @@ export function LandingPage({ onLaunchApp }: LandingPageProps) {
             <section id="how-it-works" className="py-24 border-t border-zinc-900">
                 <div className="max-w-5xl mx-auto px-6">
                     <div className="text-center max-w-2xl mx-auto mb-16">
-                        <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl mb-4">Secure redaction in 3 simple
+                        <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl mb-4">Secure document redaction in 3 simple
                             steps</h2>
                     </div>
 
