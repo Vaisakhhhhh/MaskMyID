@@ -193,7 +193,7 @@ export function ImageCanvas({
         redrawCanvas(false);
 
         const link = document.createElement('a');
-        link.download = 'masked-document.png';
+        link.download = `masked-document-${Date.now()}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
 
